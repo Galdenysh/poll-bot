@@ -4,6 +4,7 @@ dist/
 
 # Переменные окружения
 .env
+.env.development
 .env.local
 .env*.local
 

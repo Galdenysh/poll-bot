@@ -3,8 +3,6 @@ import * as dotenv from "dotenv";
 import {
   CREATE_MID_POLL_KEY,
   CREATE_MID_POLL_KEY_ID,
-  CREATE_TEST_POLL_KEY,
-  CREATE_TEST_POLL_KEY_ID,
   CREATE_PRO_POLL_KEY,
   CREATE_PRO_POLL_KEY_ID,
   TEST_KEY,
@@ -12,10 +10,11 @@ import {
 } from "./constants.js";
 import { createPollMsg, isUserAdmin } from "./utils.js";
 
-dotenv.config();
+const envFile = process.env.NODE_ENV === "production" ? ".env" : ".env.development";
+
+dotenv.config({ path: envFile });
 
 const token = process.env.BOT_TOKEN || "";
-const TEST_BOT_CHAT_ID = process.env.TEST_BOT_CHAT_ID;
 const SHUFFLE_MID_CHAT_ID = process.env.SHUFFLE_MID_CHAT_ID;
 const SHUFFLE_PRO_CHAT_ID = process.env.SHUFFLE_PRO_CHAT_ID;
 
@@ -73,12 +72,6 @@ bot.onText(/\/poll/, (msg) => {
   const chatId = msg.chat.id;
   const keyboard = {
     inline_keyboard: [
-      // [
-      //   {
-      //     text: CREATE_TEST_POLL_KEY,
-      //     callback_data: CREATE_TEST_POLL_KEY_ID,
-      //   },
-      // ],
       [
         {
           text: CREATE_MID_POLL_KEY,
@@ -131,12 +124,6 @@ bot.on("callback_query", async (callbackQuery) => {
 
     // Меняем текст сообщения, к которому была прикреплена кнопка
     bot.editMessageText("✅ Отлично! Кнопка сработала. Логика работает.", options);
-  }
-
-  if (chatId && data === CREATE_TEST_POLL_KEY_ID) {
-    console.log(`Кнопка "${CREATE_TEST_POLL_KEY}" нажата в чате ${chatId}`);
-
-    await createPollMsg(bot, TEST_BOT_CHAT_ID, options);
   }
 
   if (chatId && data === CREATE_MID_POLL_KEY_ID) {
