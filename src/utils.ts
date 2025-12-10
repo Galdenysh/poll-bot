@@ -123,7 +123,6 @@ export function getHtml(botInfo: TelegramBot.User) {
               <div class="status">
                   <h2>✅ Бот активен и работает</h2>
                   <p>Режим: ${process.env.NODE_ENV === "production" ? "Продакшен 🚀" : "Разработка 🧪"}</p>
-                  <p>Время: ${new Date().toLocaleString("ru-RU")}</p>
               </div>
               
               <div class="instructions">
