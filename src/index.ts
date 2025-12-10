@@ -45,7 +45,7 @@ if (isProduction) {
 
   app.listen(PORT, async () => {
     console.log(`🚀 Сервер бота запущен на порту ${PORT}`);
-    console.log(`🌐 Webhook URL: ${PUBLIC_URL}/bot${token.substring(0, 10)}...}`);
+    console.log(`🌐 Webhook URL: ${PUBLIC_URL}/bot${token.substring(0, 10)}...`);
 
     try {
       await bot.setWebHook(`${PUBLIC_URL}/bot${token}`);
