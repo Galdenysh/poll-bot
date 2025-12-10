@@ -1,3 +1,6 @@
+export const PORT = process.env.PORT || 3000;
+export const PUBLIC_URL = 'https://poll-bot-30f8.onrender.com';
+
 export const TEST_KEY = "🎯 Нажми меня!";
 export const TEST_KEY_ID = "button_test";
 

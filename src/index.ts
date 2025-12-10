@@ -1,17 +1,21 @@
 import TelegramBot from "node-telegram-bot-api";
 import * as dotenv from "dotenv";
+import express from "express";
 import {
   CREATE_MID_POLL_KEY,
   CREATE_MID_POLL_KEY_ID,
   CREATE_PRO_POLL_KEY,
   CREATE_PRO_POLL_KEY_ID,
+  PORT,
+  PUBLIC_URL,
   TEST_KEY,
   TEST_KEY_ID,
 } from "./constants.js";
 import { createPollMsg, isUserAdmin } from "./utils.js";
 
 const nodeEnv = process.env.NODE_ENV || "production";
-const envFile = nodeEnv === "production" ? ".env" : ".env.development";
+const isProduction = process.env.NODE_ENV === "production";
+const envFile = isProduction ? ".env" : ".env.development";
 
 dotenv.config({ path: envFile });
 
@@ -20,7 +24,6 @@ console.log(`✅ Режим: ${nodeEnv}`);
 const token = process.env.BOT_TOKEN || "";
 const SHUFFLE_MID_CHAT_ID = process.env.SHUFFLE_MID_CHAT_ID;
 const SHUFFLE_PRO_CHAT_ID = process.env.SHUFFLE_PRO_CHAT_ID;
-
 const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS ? process.env.ADMIN_USER_IDS.split(",").map(Number) : [];
 
 if (!token) {
@@ -28,9 +31,35 @@ if (!token) {
   process.exit(1);
 }
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token);
 
-console.log("🤖 Бот успешно запущен и ожидает команд...");
+if (isProduction) {
+  const app = express();
+
+  app.use(express.json());
+
+  app.post(`/bot${token}`, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+  });
+
+  app.listen(PORT, async () => {
+    console.log(`🚀 Сервер бота запущен на порту ${PORT}`);
+    console.log(`🌐 Webhook URL: ${PUBLIC_URL}/bot${token.substring(0, 10)}...}`);
+
+    try {
+      await bot.setWebHook(`${PUBLIC_URL}/bot${token}`);
+
+      console.log("✅ Webhook успешно установлен");
+    } catch (error) {
+      console.error("❌ Ошибка установки Webhook:", error);
+    }
+  });
+} else {
+  bot.startPolling();
+
+  console.log("🧪 Бот запущен в режиме Polling (разработка)");
+}
 
 // Обработчик команды /start
 bot.onText(/\/start/, (msg) => {
