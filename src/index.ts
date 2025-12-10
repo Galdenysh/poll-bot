@@ -11,7 +11,7 @@ import {
   TEST_KEY,
   TEST_KEY_ID,
 } from "./constants.js";
-import { createPollMsg, isUserAdmin } from "./utils.js";
+import { createPollMsg, getHtml, isUserAdmin } from "./utils.js";
 
 const nodeEnv = process.env.NODE_ENV || "production";
 const isProduction = process.env.NODE_ENV === "production";
@@ -37,6 +37,18 @@ if (isProduction) {
   const app = express();
 
   app.use(express.json());
+
+  app.get("/", async (_req, res) => {
+    try {
+      const botInfo = await bot.getMe();
+      const html = getHtml(botInfo);
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.send(html);
+    } catch (error) {
+      res.send("<h1>Telegram Poll Bot</h1>");
+    }
+  });
 
   app.post(`/bot${token}`, (req, res) => {
     bot.processUpdate(req.body);
