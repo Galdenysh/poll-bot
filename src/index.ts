@@ -1,12 +1,23 @@
 import TelegramBot from "node-telegram-bot-api";
 import * as dotenv from "dotenv";
-import { CREATE_POLL_KEY, CREATE_POLL_KEY_ID, TEST_KEY, TEST_KEY_ID } from "./constants.js";
+import {
+  CREATE_MID_POLL_KEY,
+  CREATE_MID_POLL_KEY_ID,
+  CREATE_TEST_POLL_KEY,
+  CREATE_TEST_POLL_KEY_ID,
+  CREATE_PRO_POLL_KEY,
+  CREATE_PRO_POLL_KEY_ID,
+  TEST_KEY,
+  TEST_KEY_ID,
+} from "./constants.js";
 import { createPollMsg, isUserAdmin } from "./utils.js";
 
 dotenv.config();
 
 const token = process.env.BOT_TOKEN || "";
 const TEST_BOT_CHAT_ID = process.env.TEST_BOT_CHAT_ID;
+const SHUFFLE_MID_CHAT_ID = process.env.SHUFFLE_MID_CHAT_ID;
+const SHUFFLE_PRO_CHAT_ID = process.env.SHUFFLE_PRO_CHAT_ID;
 
 const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS ? process.env.ADMIN_USER_IDS.split(",").map(Number) : [];
 
@@ -62,10 +73,22 @@ bot.onText(/\/poll/, (msg) => {
   const chatId = msg.chat.id;
   const keyboard = {
     inline_keyboard: [
+      // [
+      //   {
+      //     text: CREATE_TEST_POLL_KEY,
+      //     callback_data: CREATE_TEST_POLL_KEY_ID,
+      //   },
+      // ],
       [
         {
-          text: CREATE_POLL_KEY,
-          callback_data: CREATE_POLL_KEY_ID,
+          text: CREATE_MID_POLL_KEY,
+          callback_data: CREATE_MID_POLL_KEY_ID,
+        },
+      ],
+      [
+        {
+          text: CREATE_PRO_POLL_KEY,
+          callback_data: CREATE_PRO_POLL_KEY_ID,
         },
       ],
     ],
@@ -110,9 +133,21 @@ bot.on("callback_query", async (callbackQuery) => {
     bot.editMessageText("✅ Отлично! Кнопка сработала. Логика работает.", options);
   }
 
-  if (chatId && data === CREATE_POLL_KEY_ID) {
-    console.log(`Кнопка "${CREATE_POLL_KEY}" нажата в чате ${chatId}`);
+  if (chatId && data === CREATE_TEST_POLL_KEY_ID) {
+    console.log(`Кнопка "${CREATE_TEST_POLL_KEY}" нажата в чате ${chatId}`);
 
     await createPollMsg(bot, TEST_BOT_CHAT_ID, options);
+  }
+
+  if (chatId && data === CREATE_MID_POLL_KEY_ID) {
+    console.log(`Кнопка "${CREATE_MID_POLL_KEY}" нажата в чате ${chatId}`);
+
+    await createPollMsg(bot, SHUFFLE_MID_CHAT_ID, options);
+  }
+
+  if (chatId && data === CREATE_PRO_POLL_KEY_ID) {
+    console.log(`Кнопка "${CREATE_PRO_POLL_KEY}" нажата в чате ${chatId}`);
+
+    await createPollMsg(bot, SHUFFLE_PRO_CHAT_ID, options);
   }
 });
