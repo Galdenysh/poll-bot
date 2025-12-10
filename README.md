@@ -12,3 +12,5 @@ SHUFFLE_PRO_CHAT_ID=
 
 ADMIN_USER_IDS=
 ```
+
+Ссылка на бот: https://poll-bot-30f8.onrender.com/
