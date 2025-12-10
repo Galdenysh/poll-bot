@@ -10,9 +10,12 @@ import {
 } from "./constants.js";
 import { createPollMsg, isUserAdmin } from "./utils.js";
 
-const envFile = process.env.NODE_ENV === "production" ? ".env" : ".env.development";
+const nodeEnv = process.env.NODE_ENV || "production";
+const envFile = nodeEnv === "production" ? ".env" : ".env.development";
 
 dotenv.config({ path: envFile });
+
+console.log(`✅ Режим: ${nodeEnv}`);
 
 const token = process.env.BOT_TOKEN || "";
 const SHUFFLE_MID_CHAT_ID = process.env.SHUFFLE_MID_CHAT_ID;
