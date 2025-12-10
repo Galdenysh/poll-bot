@@ -1,0 +1,118 @@
+import TelegramBot from "node-telegram-bot-api";
+import * as dotenv from "dotenv";
+import { CREATE_POLL_KEY, CREATE_POLL_KEY_ID, TEST_KEY, TEST_KEY_ID } from "./constants.js";
+import { createPollMsg, isUserAdmin } from "./utils.js";
+
+dotenv.config();
+
+const token = process.env.BOT_TOKEN || "";
+const TEST_BOT_CHAT_ID = process.env.TEST_BOT_CHAT_ID;
+
+const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS ? process.env.ADMIN_USER_IDS.split(",").map(Number) : [];
+
+if (!token) {
+  console.error("❌ Ошибка: токен бота не найден. Убедитесь, что файл .env создан и заполнен.");
+  process.exit(1);
+}
+
+const bot = new TelegramBot(token, { polling: true });
+
+console.log("🤖 Бот успешно запущен и ожидает команд...");
+
+// Обработчик команды /start
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+
+  const pollKeyboard = {
+    keyboard: [[{ text: "/poll" }]],
+    resize_keyboard: true,
+    one_time_keyboard: false,
+    is_persistent: true,
+  };
+
+  bot.sendMessage(
+    chatId,
+    `🎛️ *Панель управления ботом*
+
+    Доступные команды:
+    - /poll - создать опрос в чате.
+    `,
+    {
+      parse_mode: "Markdown",
+      reply_markup: pollKeyboard,
+    }
+  );
+});
+
+// Обработчик команды /test
+bot.onText(/\/test/, (msg) => {
+  const chatId = msg.chat.id;
+
+  const keyboard = {
+    inline_keyboard: [[{ text: TEST_KEY, callback_data: TEST_KEY_ID }]],
+  };
+
+  bot.sendMessage(chatId, "Это тестовое сообщение. Нажмите кнопку ниже:", {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработчик команды /poll
+bot.onText(/\/poll/, (msg) => {
+  const chatId = msg.chat.id;
+  const keyboard = {
+    inline_keyboard: [
+      [
+        {
+          text: CREATE_POLL_KEY,
+          callback_data: CREATE_POLL_KEY_ID,
+        },
+      ],
+    ],
+  };
+
+  bot.sendMessage(chatId, "Нажмите кнопку ниже, чтобы отправить опрос в чат:", {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработчик нажатий
+bot.on("callback_query", async (callbackQuery) => {
+  const userId = callbackQuery.from.id;
+  const chatId = callbackQuery.message?.chat.id;
+  const messageId = callbackQuery.message?.message_id;
+  const data = callbackQuery.data;
+
+  const options = {
+    chat_id: chatId,
+    message_id: messageId,
+  };
+
+  // Проверка доступа
+  if (!isUserAdmin(userId, ADMIN_USER_IDS)) {
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "⛔ У вас нет прав на управление ботом.",
+      show_alert: true,
+    });
+
+    console.log(`Пользователь "${userId}" хочет получить доступ`);
+
+    return;
+  }
+
+  // Даём ответ Telegram, чтобы убрать loading
+  bot.answerCallbackQuery(callbackQuery.id);
+
+  if (chatId && data === TEST_KEY_ID) {
+    console.log(`Кнопка нажата "${TEST_KEY}" в чате ${chatId}`);
+
+    // Меняем текст сообщения, к которому была прикреплена кнопка
+    bot.editMessageText("✅ Отлично! Кнопка сработала. Логика работает.", options);
+  }
+
+  if (chatId && data === CREATE_POLL_KEY_ID) {
+    console.log(`Кнопка "${CREATE_POLL_KEY}" нажата в чате ${chatId}`);
+
+    await createPollMsg(bot, TEST_BOT_CHAT_ID, options);
+  }
+});
