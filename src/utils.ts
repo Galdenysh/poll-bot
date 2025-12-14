@@ -139,7 +139,7 @@ export function getHtml(botInfo: TelegramBot.User) {
               </div>
               
               <footer style="margin-top: 40px; text-align: center; color: #888;">
-                  <p>Работает на Node.js + Express | Деплой на Render</p>
+                  <p>Работает на Node.js + Express | Деплой на Amvera</p>
               </footer>
           </body>
           </html>
